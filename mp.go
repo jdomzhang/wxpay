@@ -7,13 +7,11 @@ import (
 
 type MP struct {
 	client *Client
-	secret string
 }
 
-func NewMP(appID, secret, mchID, mchKey string) *MP {
+func NewMP(appID, mchID, mchKey string) *MP {
 	return &MP{
 		client: NewClient(NewAccount(appID, mchID, mchKey, false)),
-		secret: secret,
 	}
 }
 

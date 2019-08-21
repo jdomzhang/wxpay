@@ -7,7 +7,7 @@ import (
 )
 
 func TestMP_Prepay(t *testing.T) {
-	mp := NewMP("aaaa", "bbbb", "cccc", "dddd")
+	mp := NewMP("aaaa", "cccc", "dddd")
 
 	output, err := mp.Prepay(&InputMP{
 		OpenID:     "eeee",
