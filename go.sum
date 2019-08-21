@@ -1,4 +1,2 @@
-github.com/jdomzhang/wxpay v1.0.6 h1:8DOQ5NSJcbIYxiIJVn4j9847h4dOxk5KMAFvJjLIiSw=
-github.com/jdomzhang/wxpay v1.0.6/go.mod h1:z7rH38P+iS3ibWDABSnNjYzYOnqqORB0QDZukzkRwnc=
 golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b h1:2b9XGzhjiYsYPnKXoEfL7klWZQIt8IfyRCz62gCqqlQ=
 golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

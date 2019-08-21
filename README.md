@@ -33,7 +33,7 @@ $ go get github.com/jdomzhang/wxpay
 
 ```cgo
 // go.mod
-require github.com/jdomzhang/wxpay v1.0.5
+require github.com/jdomzhang/wxpay v2.0.2
 
 ```
 
