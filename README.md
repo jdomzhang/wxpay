@@ -33,13 +33,25 @@ $ go get github.com/jdomzhang/wxpay
 
 ```cgo
 // go.mod
-require github.com/jdomzhang/wxpay v2.0.3
+require github.com/jdomzhang/wxpay v2.0.4
 
 ```
 
 ## 示例
 
 ```cgo
+// 小程序统一下单
+mp := wxpay.NewMP("appid", "mchid", "apiKey")
+ouput, _ := mp.Prepay(&wxpay.InputMP{
+	OpenID: "xxx",
+	Body: "test",
+	OutTradeNo: "1234",
+	TotalFee: 1,
+	IP: "127.0.0.1",
+	NotifyURL: "https://example.com/notify",
+})
+
+
 // 创建支付账户
 account1 := wxpay.NewAccount("appid", "mchid", "apiKey", false)
 account2 := wxpay.NewAccount("appid", "mchid", "apiKey", false)
