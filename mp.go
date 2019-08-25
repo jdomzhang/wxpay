@@ -5,8 +5,17 @@ import (
 	"time"
 )
 
+const (
+	TRADE_TYPE_JSAPI = "JSAPI"
+)
+
 type MP struct {
 	client *Client
+}
+
+// SetCertPath 设置操作证书，请查看API证书说明 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=4_3
+func (c *MP) SetCertPath(certPath string) error {
+	return c.client.account.SetCertData(certPath)
 }
 
 func NewMP(appID, mchID, mchKey string) *MP {
@@ -15,53 +24,20 @@ func NewMP(appID, mchID, mchKey string) *MP {
 	}
 }
 
-const (
-	TRADE_TYPE_JSAPI = "JSAPI"
-)
-
-type InputMP struct {
-	OpenID     string
-	Body       string
-	OutTradeNo string
-	TotalFee   int64
-	IP         string
-	NotifyURL  string
-}
-
-// appId,nonceStr,package,signType,timeStamp
-
-type OutputMP struct {
-	AppID     string `json:"appId"`
-	NonceStr  string `json:"nonceStr"`
-	Package   string `json:"package"`
-	SignType  string `json:"signType"`
-	TimeStamp string `json:"timeStamp"`
-	PaySign   string `json:"paySign"`
-}
-
-func (c *MP) Prepay(input *InputMP) (*OutputMP, error) {
-	var params = make(Params)
-	params.SetString("body", input.Body).
-		SetString("out_trade_no", input.OutTradeNo).
-		SetInt64("total_fee", input.TotalFee).
-		SetString("spbill_create_ip", input.IP).
-		SetString("notify_url", input.NotifyURL).
-		SetString("openid", input.OpenID).
-		SetString("trade_type", TRADE_TYPE_JSAPI)
-
-	result, err := c.client.UnifiedOrder(params)
+// Prepay 微信统一下单，接口文档 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_1
+func (c *MP) Prepay(input *JsapiIn) (*JsapiOut, Params, error) {
+	result, err := c.client.UnifiedOrder(input.toMap())
 
 	if err != nil {
-		return nil, err
+		return nil, result, err
 	}
 
-	if ok := result.GetString("return_code") == "SUCCESS" &&
-		result.GetString("return_code") == "SUCCESS"; !ok {
-		return nil, fmt.Errorf("%v", result)
+	if err := result.toError(); err != nil {
+		return nil, result, err
 	}
 
 	// create output MP
-	output := OutputMP{
+	output := JsapiOut{
 		AppID:     c.client.account.appID,
 		NonceStr:  nonceStr(),
 		Package:   fmt.Sprintf("prepay_id=%s", result.GetString("prepay_id")),
@@ -70,17 +46,36 @@ func (c *MP) Prepay(input *InputMP) (*OutputMP, error) {
 	}
 
 	output.PaySign = c.client.Sign(output.toMap())
-
-	return &output, nil
+	return &output, result, nil
 }
 
-func (obj *OutputMP) toMap() Params {
-	params := make(Params)
-	params.SetString("appId", obj.AppID)
-	params.SetString("nonceStr", obj.NonceStr)
-	params.SetString("package", obj.Package)
-	params.SetString("signType", obj.SignType)
-	params.SetString("timeStamp", obj.TimeStamp)
+// Refund 微信退款，必须设置证书，接口文档 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_4
+func (c *MP) Refund(input *RefundIn) (Params, error) {
+	result, err := c.client.Refund(input.toMap())
 
-	return params
+	if err != nil {
+		return result, err
+	}
+
+	if err := result.toError(); err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+// QueryOrder 查询订单，接口文档 https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_2
+func (c *MP) QueryOrder(outTradeNo string) (string, Params, error) {
+	result, err := c.client.OrderQuery(make(Params).SetString("out_trade_no", outTradeNo))
+
+	if err != nil {
+		return "", result, err
+	}
+
+	if err := result.toError(); err != nil {
+		return "", result, err
+	}
+
+	status := result.GetString("trade_state")
+	return status, result, nil
 }
