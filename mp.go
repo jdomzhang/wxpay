@@ -18,9 +18,17 @@ func (c *MP) SetCertPath(certPath string) error {
 	return c.client.account.SetCertData(certPath)
 }
 
+// NewMP 小程序支付
 func NewMP(appID, mchID, mchKey string) *MP {
 	return &MP{
 		client: NewClient(NewAccount(appID, mchID, mchKey, false)),
+	}
+}
+
+// NewSubMP 小程序支付-使用服务商提供的支付商户
+func NewSubMP(appID, mchID, mchKey, subAppID, subMchID string) *MP {
+	return &MP{
+		client: NewClient(NewSubAccount(appID, mchID, mchKey, subAppID, subMchID)),
 	}
 }
 
