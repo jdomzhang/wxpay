@@ -56,6 +56,10 @@ func (c *Client) fillRequestData(params Params) Params {
 	params["nonce_str"] = nonceStr()
 	params["sign_type"] = c.signType
 	params["sign"] = c.Sign(params)
+	if c.account.isSubMode {
+		params["sub_appid"] = c.account.subAppID
+		params["sub_mch_id"] = c.account.subMchID
+	}
 	return params
 }
 

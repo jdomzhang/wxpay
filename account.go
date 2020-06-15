@@ -9,8 +9,11 @@ type Account struct {
 	appID     string
 	mchID     string
 	apiKey    string
+	subAppID  string
+	subMchID  string
 	certData  []byte
 	isSandbox bool
+	isSubMode bool
 }
 
 // 创建微信支付账号
@@ -20,6 +23,18 @@ func NewAccount(appID string, mchID string, apiKey string, isSanbox bool) *Accou
 		mchID:     mchID,
 		apiKey:    apiKey,
 		isSandbox: isSanbox,
+	}
+}
+
+// 创建微信支付子账号-服务商模式
+func NewSubAccount(appID, mchID, apiKey, subAppID, subMchID string) *Account {
+	return &Account{
+		appID:     appID,
+		mchID:     mchID,
+		apiKey:    apiKey,
+		subAppID:  subAppID,
+		subMchID:  subMchID,
+		isSubMode: true,
 	}
 }
 
