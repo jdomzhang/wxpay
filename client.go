@@ -16,6 +16,7 @@ import (
 
 const bodyType = "application/xml; charset=utf-8"
 
+// Client /
 type Client struct {
 	account              *Account // 支付账号
 	signType             string   // 签名类型
@@ -23,11 +24,11 @@ type Client struct {
 	httpReadTimeoutMs    int      // 读取超时时间
 }
 
-// 创建微信支付客户端
+// NewClient / 创建微信支付客户端
 func NewClient(account *Account) *Client {
 	return &Client{
 		account:              account,
-		signType:             MD5,
+		signType:             HMACSHA256, // 默认使用sha256，分账API需要
 		httpConnectTimeoutMs: 2000,
 		httpReadTimeoutMs:    1000,
 	}
@@ -55,11 +56,14 @@ func (c *Client) fillRequestData(params Params) Params {
 	params["mch_id"] = c.account.mchID
 	params["nonce_str"] = nonceStr()
 	params["sign_type"] = c.signType
-	params["sign"] = c.Sign(params)
 	if c.account.isSubMode {
-		params["sub_appid"] = c.account.subAppID
 		params["sub_mch_id"] = c.account.subMchID
+		params["sub_appid"] = c.account.subAppID
+		if c.account.isProfitSharing {
+			params.Remove("sub_appid")
+		}
 	}
+	params["sign"] = c.Sign(params)
 	return params
 }
 
@@ -385,6 +389,66 @@ func (c *Client) AuthCodeToOpenid(params Params) (Params, error) {
 		url = AuthCodeToOpenidUrl
 	}
 	xmlStr, err := c.postWithoutCert(url, params)
+	if err != nil {
+		return nil, err
+	}
+	return c.processResponseXml(xmlStr)
+}
+
+// ProfitSharingAddReceiver 添加分账接收方
+func (c *Client) ProfitSharingAddReceiver(params Params) (Params, error) {
+	var url string
+	if c.account.isSandbox {
+		url = SandboxProfitSharingAddReceiver
+	} else {
+		url = ProfitSharingAddReceiver
+	}
+	xmlStr, err := c.postWithoutCert(url, params)
+	if err != nil {
+		return nil, err
+	}
+	return c.processResponseXml(xmlStr)
+}
+
+// ProfitSharing 单次分账
+func (c *Client) ProfitSharing(params Params) (Params, error) {
+	var url string
+	if c.account.isSandbox {
+		url = SandboxProfitSharingMulti
+	} else {
+		url = ProfitSharingMulti
+	}
+	xmlStr, err := c.postWithCert(url, params)
+	if err != nil {
+		return nil, err
+	}
+	return c.processResponseXml(xmlStr)
+}
+
+// ProfitSharingMulti 多次分账
+func (c *Client) ProfitSharingMulti(params Params) (Params, error) {
+	var url string
+	if c.account.isSandbox {
+		url = SandboxProfitSharingMulti
+	} else {
+		url = ProfitSharingMulti
+	}
+	xmlStr, err := c.postWithCert(url, params)
+	if err != nil {
+		return nil, err
+	}
+	return c.processResponseXml(xmlStr)
+}
+
+// ProfitSharingFinish 完结分账
+func (c *Client) ProfitSharingFinish(params Params) (Params, error) {
+	var url string
+	if c.account.isSandbox {
+		url = SandboxProfitSharingFinish
+	} else {
+		url = ProfitSharingFinish
+	}
+	xmlStr, err := c.postWithCert(url, params)
 	if err != nil {
 		return nil, err
 	}

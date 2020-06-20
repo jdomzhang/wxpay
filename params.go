@@ -1,6 +1,9 @@
 package wxpay
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Params map[string]string
 
@@ -29,4 +32,23 @@ func (p Params) GetInt64(k string) int64 {
 func (p Params) ContainsKey(key string) bool {
 	_, ok := p[key]
 	return ok
+}
+
+func (p Params) Remove(key string) {
+	if p.ContainsKey(key) {
+		delete(p, key)
+	}
+}
+
+func (obj Params) toError() error {
+
+	if obj.GetString("return_code") != SUCCESS {
+		return fmt.Errorf(obj.GetString("return_msg"))
+	}
+
+	if obj.GetString("result_code") != SUCCESS {
+		return fmt.Errorf(obj.GetString("err_code_des"))
+	}
+
+	return nil
 }

@@ -6,14 +6,15 @@ import (
 )
 
 type Account struct {
-	appID     string
-	mchID     string
-	apiKey    string
-	subAppID  string
-	subMchID  string
-	certData  []byte
-	isSandbox bool
-	isSubMode bool
+	appID           string
+	mchID           string
+	apiKey          string
+	subAppID        string
+	subMchID        string
+	certData        []byte
+	isSandbox       bool
+	isSubMode       bool
+	isProfitSharing bool
 }
 
 // 创建微信支付账号
